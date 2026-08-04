@@ -23,8 +23,15 @@ class MusicRepositoryImpl @Inject constructor(
     }
 
     override suspend fun refreshTracks() {
-        val remoteTracks = api.getTracks().map { it.toTrack() }
-        dao.clearTracks()
-        dao.insertTracks(remoteTracks.map { it.toTrackEntity() })
+        try {
+            val remoteTracks = api.getTracks().map { it.toTrack() }
+            if (remoteTracks.isNotEmpty()) {
+                dao.clearTracks()
+                dao.insertTracks(remoteTracks.map { it.toTrackEntity() })
+            }
+        } catch (e: Exception) {
+            // Log error or rethrow based on business needs
+            throw e
+        }
     }
 }
