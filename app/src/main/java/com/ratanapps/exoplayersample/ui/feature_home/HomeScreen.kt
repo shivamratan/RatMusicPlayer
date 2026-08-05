@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -11,9 +12,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.ratanapps.exoplayersample.domain.model.Album
 import com.ratanapps.exoplayersample.domain.model.Artist
 import com.ratanapps.exoplayersample.domain.model.Track
@@ -50,9 +55,30 @@ fun HomeScreen(
 
                 item {
                     SectionHeader("Recently Played")
+                    val sampleTrack = Track(
+                        id = "sample_helix",
+                        title = "SoundHelix Song 1",
+                        artist = "SoundHelix",
+                        mediaUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+                        imageUrl = "https://picsum.photos/seed/helix/200",
+                        durationMs = 300000L
+                    )
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        item {
+                            MediaCard(
+                                title = sampleTrack.title,
+                                subtitle = sampleTrack.artist,
+                                imageUrl = sampleTrack.imageUrl,
+                                onClick = { onTrackClick(sampleTrack) }
+                            )
+                        }
                         items(uiState.recentlyPlayed) { track ->
-                            MediaCard(track.title, track.artist, track.imageUrl)
+                            MediaCard(
+                                title = track.title,
+                                subtitle = track.artist,
+                                imageUrl = track.imageUrl,
+                                onClick = { onTrackClick(track) }
+                            )
                         }
                     }
                 }
@@ -61,7 +87,11 @@ fun HomeScreen(
                     SectionHeader("Recommended Albums")
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(uiState.recommendedAlbums) { album ->
-                            MediaCard(album.title, album.artist, album.imageUrl)
+                            MediaCard(
+                                title = album.title,
+                                subtitle = album.artist,
+                                imageUrl = album.imageUrl
+                            )
                         }
                     }
                 }
@@ -70,7 +100,11 @@ fun HomeScreen(
                     SectionHeader("Popular Artists")
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(uiState.popularArtists) { artist ->
-                            MediaCard(artist.name, "", artist.imageUrl)
+                            MediaCard(
+                                title = artist.name,
+                                subtitle = "",
+                                imageUrl = artist.imageUrl
+                            )
                         }
                     }
                 }
@@ -94,15 +128,40 @@ fun SectionHeader(title: String) {
 }
 
 @Composable
-fun MediaCard(title: String, subtitle: String, imageUrl: String) {
-    Card(modifier = Modifier.width(140.dp)) {
+fun MediaCard(
+    title: String,
+    subtitle: String,
+    imageUrl: String,
+    onClick: () -> Unit = {}
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.width(140.dp)
+    ) {
         Column(modifier = Modifier.padding(8.dp)) {
-            Box(modifier = Modifier.size(124.dp).padding(4.dp)) {
-                Text("Img") // Placeholder for AsyncImage
-            }
-            Text(title, maxLines = 1, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(124.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = title,
+                maxLines = 1,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                overflow = TextOverflow.Ellipsis
+            )
             if (subtitle.isNotBlank()) {
-                Text(subtitle, maxLines = 1, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    text = subtitle,
+                    maxLines = 1,
+                    style = MaterialTheme.typography.bodySmall,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }

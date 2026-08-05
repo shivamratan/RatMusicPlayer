@@ -10,11 +10,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ratanapps.exoplayersample.domain.model.Track
 import com.ratanapps.exoplayersample.ui.feature_home.TrackItem
 
 @Composable
 fun LibraryScreen(
-    viewModel: LibraryViewModel = hiltViewModel()
+    viewModel: LibraryViewModel = hiltViewModel(),
+    onTrackClick: (Track) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -43,7 +45,7 @@ fun LibraryScreen(
 
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(uiState.tracks) { track ->
-                TrackItem(track = track, onTrackClick = {})
+                TrackItem(track = track, onTrackClick = onTrackClick)
             }
         }
     }

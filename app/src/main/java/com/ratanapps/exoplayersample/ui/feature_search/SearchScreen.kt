@@ -13,12 +13,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ratanapps.exoplayersample.domain.model.Track
 import com.ratanapps.exoplayersample.ui.feature_home.TrackItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
-    viewModel: SearchViewModel = hiltViewModel()
+    viewModel: SearchViewModel = hiltViewModel(),
+    onTrackClick: (Track) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -36,7 +38,7 @@ fun SearchScreen(
         if (uiState.isSearching) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(uiState.searchResults) { track ->
-                    TrackItem(track = track, onTrackClick = {})
+                    TrackItem(track = track, onTrackClick = onTrackClick)
                 }
             }
         } else {

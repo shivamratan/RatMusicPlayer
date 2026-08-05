@@ -1,0 +1,128 @@
+package com.ratanapps.exoplayersample.ui.feature_player
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlayerScreen(
+    viewModel: PlayerViewModel = hiltViewModel(),
+    onMinimize: () -> Unit = {}
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Now Playing", style = MaterialTheme.typography.titleMedium) },
+                navigationIcon = {
+                    IconButton(onClick = onMinimize) {
+                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Minimize")
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Thumbnail
+            AsyncImage(
+                model = uiState.currentTrack?.imageUrl,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(300.dp)
+                    .clip(RoundedCornerShape(16.dp)),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Title & Artist
+            Text(
+                text = uiState.currentTrack?.title ?: "No Track Selected",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = uiState.currentTrack?.artist ?: "Unknown Artist",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.secondary,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Slider
+            Slider(
+                value = uiState.currentPosition.toFloat(),
+                onValueChange = { viewModel.seekTo(it.toLong()) },
+                valueRange = 0f..(if (uiState.duration > 0) uiState.duration.toFloat() else 1f),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(formatTime(uiState.currentPosition), style = MaterialTheme.typography.bodySmall)
+                Text(formatTime(uiState.duration), style = MaterialTheme.typography.bodySmall)
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Controls
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { viewModel.skipPrevious() }, modifier = Modifier.size(48.dp)) {
+                    Icon(Icons.Default.SkipPrevious, contentDescription = "Previous", modifier = Modifier.size(32.dp))
+                }
+
+                FilledIconButton(
+                    onClick = { viewModel.togglePlayPause() },
+                    modifier = Modifier.size(72.dp),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    Icon(
+                        if (uiState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = "Play/Pause",
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+
+                IconButton(onClick = { viewModel.skipNext() }, modifier = Modifier.size(48.dp)) {
+                    Icon(Icons.Default.SkipNext, contentDescription = "Next", modifier = Modifier.size(32.dp))
+                }
+            }
+        }
+    }
+}
+
+private fun formatTime(ms: Long): String {
+    val totalSeconds = ms / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return String.format("%02d:%02d", minutes, seconds)
+}
