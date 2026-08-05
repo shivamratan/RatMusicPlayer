@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -117,24 +118,29 @@ fun PlayerScreen(
                     Icon(Icons.Default.SkipPrevious, contentDescription = "Previous", modifier = Modifier.size(32.dp))
                 }
 
-                Box(contentAlignment = Alignment.Center) {
-                    FilledIconButton(
-                        onClick = { viewModel.togglePlayPause() },
-                        modifier = Modifier.size(72.dp),
-                        shape = RoundedCornerShape(24.dp)
-                    ) {
-                        Icon(
-                            if (uiState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                            contentDescription = "Play/Pause",
-                            modifier = Modifier.size(40.dp)
-                        )
-                    }
+                Box(
+                    modifier = Modifier.size(72.dp),
+                    contentAlignment = Alignment.Center
+                ) {
                     if (uiState.playbackState == Player.STATE_BUFFERING) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(80.dp),
+                            modifier = Modifier.size(30.dp),
                             color = MaterialTheme.colorScheme.primary,
-                            strokeWidth = 2.dp
+                            strokeWidth = 3.dp,
+                            strokeCap = StrokeCap.Round
                         )
+                    } else {
+                        FilledIconButton(
+                            onClick = { viewModel.togglePlayPause() },
+                            modifier = Modifier.fillMaxSize(),
+                            shape = RoundedCornerShape(24.dp)
+                        ) {
+                            Icon(
+                                if (uiState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                contentDescription = "Play/Pause",
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
                     }
                 }
 
