@@ -3,6 +3,8 @@ package com.ratanapps.exoplayersample.ui.feature_player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import com.ratanapps.exoplayersample.domain.model.Track
 import com.ratanapps.exoplayersample.service.MediaControllerManager
@@ -29,7 +31,16 @@ class PlayerViewModel @Inject constructor(
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
-            _uiState.update { it.copy(playbackState = playbackState) }
+            _uiState.update { state ->
+                state.copy(
+                    playbackState = playbackState,
+                    duration = controllerManager.controller?.duration?.takeIf { it != androidx.media3.common.C.TIME_UNSET } ?: state.duration
+                )
+            }
+        }
+
+        override fun onPlayerError(error: PlaybackException) {
+            _uiState.update { it.copy(error = error.localizedMessage) }
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -43,7 +54,12 @@ class PlayerViewModel @Inject constructor(
                     durationMs = 0 // Will get from player duration
                 )
             }
-            _uiState.update { it.copy(currentTrack = track, duration = controllerManager.controller?.duration ?: 0) }
+            _uiState.update { state ->
+                state.copy(
+                    currentTrack = track,
+                    duration = controllerManager.controller?.duration?.takeIf { it != androidx.media3.common.C.TIME_UNSET } ?: state.duration
+                )
+            }
         }
     }
 
@@ -77,9 +93,20 @@ class PlayerViewModel @Inject constructor(
 
     fun playTrack(track: Track) {
         controllerManager.connect { controller ->
+            val mimeType = if (track.mediaUrl.endsWith(".m3u8")) {
+                MimeTypes.APPLICATION_M3U8
+            } else {
+                null
+            }
+
             val mediaItem = MediaItem.Builder()
                 .setMediaId(track.id)
                 .setUri(track.mediaUrl)
+                .apply {
+                    if (mimeType != null) {
+                        setMimeType(mimeType)
+                    }
+                }
                 .setMediaMetadata(
                     androidx.media3.common.MediaMetadata.Builder()
                         .setTitle(track.title)

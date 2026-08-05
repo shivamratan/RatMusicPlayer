@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.common.Player
 import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,13 +77,29 @@ fun PlayerScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Slider
-            Slider(
-                value = uiState.currentPosition.toFloat(),
-                onValueChange = { viewModel.seekTo(it.toLong()) },
-                valueRange = 0f..(if (uiState.duration > 0) uiState.duration.toFloat() else 1f),
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Slider & Buffer
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+                // Buffer Indicator
+                LinearProgressIndicator(
+                    progress = { if (uiState.duration > 0) (uiState.bufferPosition.toFloat() / uiState.duration) else 0f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .padding(horizontal = 4.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                )
+                Slider(
+                    value = uiState.currentPosition.toFloat(),
+                    onValueChange = { viewModel.seekTo(it.toLong()) },
+                    valueRange = 0f..(if (uiState.duration > 0) uiState.duration.toFloat() else 1f),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = SliderDefaults.colors(
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = androidx.compose.ui.graphics.Color.Transparent
+                    )
+                )
+            }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(formatTime(uiState.currentPosition), style = MaterialTheme.typography.bodySmall)
                 Text(formatTime(uiState.duration), style = MaterialTheme.typography.bodySmall)
@@ -100,20 +117,42 @@ fun PlayerScreen(
                     Icon(Icons.Default.SkipPrevious, contentDescription = "Previous", modifier = Modifier.size(32.dp))
                 }
 
-                FilledIconButton(
-                    onClick = { viewModel.togglePlayPause() },
-                    modifier = Modifier.size(72.dp),
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    Icon(
-                        if (uiState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = "Play/Pause",
-                        modifier = Modifier.size(40.dp)
-                    )
+                Box(contentAlignment = Alignment.Center) {
+                    FilledIconButton(
+                        onClick = { viewModel.togglePlayPause() },
+                        modifier = Modifier.size(72.dp),
+                        shape = RoundedCornerShape(24.dp)
+                    ) {
+                        Icon(
+                            if (uiState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                            contentDescription = "Play/Pause",
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                    if (uiState.playbackState == Player.STATE_BUFFERING) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(80.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                            strokeWidth = 2.dp
+                        )
+                    }
                 }
 
                 IconButton(onClick = { viewModel.skipNext() }, modifier = Modifier.size(48.dp)) {
                     Icon(Icons.Default.SkipNext, contentDescription = "Next", modifier = Modifier.size(32.dp))
+                }
+            }
+
+            if (uiState.error != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = uiState.error!!,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center
+                )
+                Button(onClick = { uiState.currentTrack?.let { viewModel.playTrack(it) } }) {
+                    Text("Retry")
                 }
             }
         }
