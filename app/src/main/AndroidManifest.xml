@@ -29,7 +29,7 @@
         </activity>
 
         <service
-            android:name=".service.MusicService"
+            android:name=".service.RatMusicService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>

@@ -7,7 +7,7 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import com.ratanapps.exoplayersample.domain.model.Track
-import com.ratanapps.exoplayersample.service.MediaControllerManager
+import com.ratanapps.exoplayersample.service.RatMediaControllerManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    private val controllerManager: MediaControllerManager
+    private val controllerManager: RatMediaControllerManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlayerUiState())
@@ -77,6 +77,7 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    /** Starts periodic updates for the current playback position. */
     private fun startPositionUpdates() {
         viewModelScope.launch {
             while (isActive) {
@@ -91,6 +92,7 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    /** Sets the track as the current media item and starts playback. */
     fun playTrack(track: Track) {
         controllerManager.connect { controller ->
             val mimeType = if (track.mediaUrl.endsWith(".m3u8")) {
@@ -121,20 +123,24 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    /** Toggles the play/pause state of the current playback. */
     fun togglePlayPause() {
         controllerManager.controller?.let {
             if (it.isPlaying) it.pause() else it.play()
         }
     }
 
+    /** Seeks to the specified position in the current track. */
     fun seekTo(position: Long) {
         controllerManager.controller?.seekTo(position)
     }
 
+    /** Skips to the next media item in the playlist. */
     fun skipNext() {
         controllerManager.controller?.seekToNext()
     }
 
+    /** Skips to the previous media item in the playlist. */
     fun skipPrevious() {
         controllerManager.controller?.seekToPrevious()
     }

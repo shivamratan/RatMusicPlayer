@@ -11,37 +11,42 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class MediaControllerManager @Inject constructor(
+class RatMediaControllerManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+
     private var controllerFuture: ListenableFuture<MediaController>? = null
+
     var controller: MediaController? = null
         private set
 
     fun connect(onConnected: (MediaController) -> Unit) {
-        if (controller != null) {
-            onConnected(controller!!)
+        controller?.let {
+            onConnected(it)
             return
         }
 
-        if (controllerFuture != null) {
-            controllerFuture?.addListener({
-                controller?.let(onConnected)
-            }, MoreExecutors.directExecutor())
+        controllerFuture?.let {
+            it.addListener({ controller?.let { mycontroller -> onConnected(mycontroller) }},
+                MoreExecutors.directExecutor()
+            )
             return
         }
 
-        val sessionToken = SessionToken(context, ComponentName(context, MusicService::class.java))
+        val sessionToken = SessionToken(context, ComponentName(context, RatMusicService::class.java))
         val future = MediaController.Builder(context, sessionToken).buildAsync()
+
         controllerFuture = future
-        future.addListener({
-            try {
-                controller = future.get()
-                controller?.let(onConnected)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }, MoreExecutors.directExecutor())
+        controllerFuture?.addListener({
+                try {
+                    controller = future.get()
+                    controller?.let { mycontroller -> onConnected(mycontroller) }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            },
+            MoreExecutors.directExecutor()
+        )
     }
 
     fun release() {
@@ -51,4 +56,5 @@ class MediaControllerManager @Inject constructor(
         }
         controller = null
     }
+
 }
