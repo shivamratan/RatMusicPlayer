@@ -49,9 +49,20 @@ class PlayerViewModel @Inject constructor(
                     id = it.mediaId,
                     title = it.mediaMetadata.title.toString(),
                     artist = it.mediaMetadata.artist.toString(),
+                    album = it.mediaMetadata.albumTitle.toString(),
+                    albumArtist = it.mediaMetadata.albumArtist.toString(),
+                    movie = "",
+                    releaseYear = 0,
+                    duration = 0,
+                    durationFormatted = "",
+                    genre = it.mediaMetadata.genre.toString(),
+                    language = "",
+                    composer = it.mediaMetadata.composer.toString(),
+                    lyricist = "",
+                    recordLabel = "",
                     mediaUrl = "", // Not needed for UI display
                     imageUrl = it.mediaMetadata.artworkUri.toString(),
-                    durationMs = 0 // Will get from player duration
+                    metadataSource = ""
                 )
             }
             _uiState.update { state ->
@@ -113,6 +124,10 @@ class PlayerViewModel @Inject constructor(
                     androidx.media3.common.MediaMetadata.Builder()
                         .setTitle(track.title)
                         .setArtist(track.artist)
+                        .setAlbumTitle(track.album)
+                        .setAlbumArtist(track.albumArtist)
+                        .setGenre(track.genre)
+                        .setComposer(track.composer)
                         .setArtworkUri(android.net.Uri.parse(track.imageUrl))
                         .build()
                 )

@@ -55,39 +55,7 @@ fun HomeScreen(
 
                 item {
                     SectionHeader("Recently Played")
-                    val sampleTrack1 = Track(
-                        id = "sample_helix",
-                        title = "SoundHelix Song 1",
-                        artist = "SoundHelix",
-                        mediaUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-                        imageUrl = "https://picsum.photos/seed/helix/200",
-                        durationMs = 300000L
-                    )
-                    val sampleTrack2 = Track(
-                        id = "sample_hls_angel",
-                        title = "Angel One (HLS Stream)",
-                        artist = "Shaka Assets",
-                        mediaUrl = "https://storage.googleapis.com/shaka-demo-assets/angel-one-hls/hls.m3u8",
-                        imageUrl = "https://picsum.photos/seed/angel/200",
-                        durationMs = 600000L
-                    )
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        item {
-                            MediaCard(
-                                title = sampleTrack1.title,
-                                subtitle = sampleTrack1.artist,
-                                imageUrl = sampleTrack1.imageUrl,
-                                onClick = { onTrackClick(sampleTrack1) }
-                            )
-                        }
-                        item {
-                            MediaCard(
-                                title = sampleTrack2.title,
-                                subtitle = sampleTrack2.artist,
-                                imageUrl = sampleTrack2.imageUrl,
-                                onClick = { onTrackClick(sampleTrack2) }
-                            )
-                        }
                         items(uiState.recentlyPlayed) { track ->
                             MediaCard(
                                 title = track.title,
