@@ -1,5 +1,6 @@
 package com.ratanapps.exoplayersample.ui.feature_player
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -93,6 +94,7 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch {
             while (isActive) {
                 controllerManager.controller?.let { controller ->
+                    Log.d("HLS_DEBUG", "Buffered position: ${controller.bufferedPosition}")
                     _uiState.update { it.copy(
                         currentPosition = controller.currentPosition,
                         bufferPosition = controller.bufferedPosition
